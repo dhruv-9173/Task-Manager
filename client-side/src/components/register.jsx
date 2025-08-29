@@ -1,7 +1,10 @@
 import { useFormik } from "formik";
 import "bootstrap/dist/css/bootstrap.min.css";
 import RegisterValidationSchema from './../utils/RegisterValidationSchema'
+import useRegister from "../hooks/useRegister";
+import Loader from "./Loader";
 function Register() {
+  const {errors, loading, success, register} = useRegister();
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -11,13 +14,13 @@ function Register() {
     },
     validationSchema:RegisterValidationSchema,
     onSubmit: (values) => {
-      console.log("Register Data:", values);
+      register(values);
     },
   });
 
   return (
     <div className="container-fluid vh-100 d-flex justify-content-center align-items-center bg-light">
-      <div className="card p-4 shadow-lg" style={{ width: "450px" }}>
+      <div className="card p-4 shadow-lg h-75" style={{ width: "450px" }}>
         <h2 className="text-center mb-4">Register</h2>
 
         <form onSubmit={formik.handleSubmit}>
@@ -82,11 +85,11 @@ function Register() {
             />
           </div>
 
-          
+          <div className="text-danger">{errors}</div>
           <div className="d-grid">
-            <button type="submit" className="btn btn-primary">
+            {loading ? <Loader/> : <button type="submit" className="btn btn-primary">
               Register
-            </button>
+            </button>}
           </div>
         </form>
       </div>

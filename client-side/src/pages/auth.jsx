@@ -1,14 +1,12 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useState } from "react";
 import { NavLink,Outlet } from "react-router-dom";
 function Auth() {
   const activeLinkStyle = ({isActive})=>({
-        display : isActive?"none":"block"
-        
+        display : isActive?"none":"block" 
   });
   return (
-    <div className="container-fluid">
-      <div className="row vh-100">
+    <div className="container-fluid vh-100">
+      <div className="row">
         
         <div className="col d-flex flex-column justify-content-center align-items-center bg-info text-white ">
             <h1>Task Manager</h1>
@@ -24,7 +22,7 @@ function Auth() {
         </div>
 
         
-        <div className="col-6 d-flex justify-content-center align-items-center bg-light vh-100">
+        <div className="col-6 d-flex justify-content-center align-items-center bg-light">
             <Outlet/>
         </div>
       </div>
