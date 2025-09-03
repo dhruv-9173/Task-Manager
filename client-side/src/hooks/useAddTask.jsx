@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { handleaddTask } from "../services/AppService";
-
+import { useDispatch } from "react-redux";
+import { addTask } from "../utils/taskSlice";
 function useAddTask() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
   const addtask = (request) => {
     setLoading(true);
     try {
       handleaddTask(request)
         .then((response) => {
-          setSuccess(response.data);
+          dispatch(addTask(response.data.data));
+          setSuccess(response.data.status);
         })
         .catch((error) => {
-          setMessage(error);
+          setError(error);
         });
     } catch (error) {
       setError("Server Error");

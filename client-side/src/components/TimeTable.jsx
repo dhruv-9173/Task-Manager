@@ -1,44 +1,23 @@
-import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import Loader from "./Loader";
-import { getTimeTable } from "../services/AppService";
+
 function TimeTable() {
-  const [data, setdata] = useState([]);
-  const [loading, setLoading] = useState([]);
-  useEffect(() => {
-    setLoading(true);
-    getTimeTable().then((response) => {
-      setdata(response);
-    });
-    setLoading(false);
-  }, [data]);
+  const { items: data, loading } = useSelector((state) => state.tasks);
+
   const priorityStyle = (priority) => {
-    switch (priority) {
-      case "High":
-        return {
-          width: "15px",
-          height: "15px",
-          backgroundColor: "red",
-          borderRadius: "50%",
-        };
-      case "Medium":
-        return {
-          width: "15px",
-          height: "15px",
-          backgroundColor: "orange",
-          borderRadius: "50%",
-        };
-      case "Low":
-        return {
-          width: "15px",
-          height: "15px",
-          backgroundColor: "green",
-          borderRadius: "50%",
-        };
-      default:
-        return {};
-    }
+    return {
+      width: "15px",
+      height: "15px",
+      backgroundColor:
+        priority === "High"
+          ? "red"
+          : priority === "Medium"
+          ? "orange"
+          : "yellow",
+      borderRadius: "50%",
+    };
   };
 
   return (
@@ -54,7 +33,7 @@ function TimeTable() {
           <div className="container border border-primary h-100 bg-white shadow-sm rounded p-3">
             <div className="row">
               {data.map((task) => (
-                <div key={task.taskid} className="col-5 col-md-6 mb-3">
+                <div key={task._id} className="col-12 col-md-6 mb-3">
                   <div
                     className="card shadow-lg border-0 h-100 task-card"
                     style={{ transition: "transform 0.2s" }}
@@ -69,14 +48,16 @@ function TimeTable() {
                         <OverlayTrigger
                           placement="left"
                           overlay={
-                            <Tooltip id="tooltip">{task.priority}</Tooltip>
+                            <Tooltip id={`tooltip-${task._id}`}>
+                              {task.priority}
+                            </Tooltip>
                           }
                         >
                           <div style={priorityStyle(task.priority)}></div>
                         </OverlayTrigger>
                       </div>
 
-                      <h5 className="card-title fw-bold">{task.taskname}</h5>
+                      <h5 className="card-title fw-bold">{task.name}</h5>
 
                       <p className="card-text mb-1">
                         <i className="bi bi-calendar-event me-2"></i>
@@ -84,9 +65,8 @@ function TimeTable() {
                       </p>
                       <p className="card-text mb-1">
                         <i className="bi bi-clock me-2"></i>
-                        <strong>Time:</strong> {task.time}
+                        <strong>Time:</strong> {task.time || "—"}
                       </p>
-
                       <p className="card-text">
                         <strong>Status:</strong> {task.status}
                       </p>
@@ -98,8 +78,7 @@ function TimeTable() {
           </div>
         ) : (
           <div className="text-center text-muted mt-4">
-            {" "}
-            Oops! No Time Table for today{" "}
+            Oops! No Time Table for today
           </div>
         )}
       </div>

@@ -1,10 +1,11 @@
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import "bootstrap-icons/font/bootstrap-icons.css";
 import { useFormik } from "formik";
+import "bootstrap-icons/font/bootstrap-icons.css";
+
 import Loader from "./Loader";
-import useAddTask from "../hooks/useAddTask";
 import DialogBox from "./DialogBox";
-import { useEffect, useState } from "react";
+import useAddTask from "../hooks/useAddTask";
 
 export default function AddTask({ CloseAddTask }) {
   const { addtask, error, success, loading, reset } = useAddTask();
@@ -12,21 +13,19 @@ export default function AddTask({ CloseAddTask }) {
 
   const formik = useFormik({
     initialValues: {
-      taskname: "",
-      taskdescription: "",
-      date: "",
-      time: "",
+      name: "",
+      description: "",
+      deadline: "",
       priority: "",
     },
-    onSubmit: (values) => {
-      addtask(values);
+    onSubmit: async (values) => {
+      await addtask(values);
+      // Close the form only if successful
+      if (!error) {
+        CloseAddTask();
+      }
     },
   });
-
-  const onClose = () => {
-    reset();
-    setShowDialog(false);
-  };
 
   useEffect(() => {
     if (error || success) {
@@ -34,17 +33,24 @@ export default function AddTask({ CloseAddTask }) {
     }
   }, [error, success]);
 
+  const handleDialogClose = () => {
+    setShowDialog(false);
+    reset();
+  };
+
   return createPortal(
     <div className="position-fixed start-0 end-0 top-0 bottom-0 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
+      {/* 🔹 Dialog Box */}
       {showDialog && (
         <DialogBox
-          message={success || error}
-          error={error}
-          success={success}
-          onClose={onClose}
+          message={error || success}
+          error={!!error}
+          success={!!success}
+          onClose={handleDialogClose}
         />
       )}
 
+      {/* 🔹 Modal Content */}
       <div className="container bg-light h-75 w-50 rounded-5 p-5 shadow">
         <div className="d-flex justify-content-end">
           <i
@@ -59,48 +65,46 @@ export default function AddTask({ CloseAddTask }) {
         <form onSubmit={formik.handleSubmit}>
           <div className="row">
             <div className="col mb-3">
-              <label className="form-label" htmlFor="taskname">
+              <label htmlFor="name" className="form-label">
                 Task Name
               </label>
               <input
-                className="form-control w-75"
-                name="taskname"
-                id="taskname"
-                value={formik.values.taskname}
+                id="name"
+                name="name"
                 type="text"
-                placeholder="Task Name"
+                className="form-control w-100"
+                placeholder="Enter task name"
+                value={formik.values.name}
                 onChange={formik.handleChange}
               />
             </div>
 
             <div className="col mb-3">
-              <label className="form-label" htmlFor="date">
-                Date of Completion
+              <label htmlFor="deadline" className="form-label">
+                Deadline
               </label>
               <input
-                className="form-control w-75"
-                name="date"
-                id="date"
-                value={formik.values.date}
+                id="deadline"
+                name="deadline"
                 type="date"
+                className="form-control w-100"
+                value={formik.values.deadline}
                 onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
               />
             </div>
           </div>
 
           <div className="row">
             <div className="col mb-3">
-              <label className="form-label" htmlFor="priority">
+              <label htmlFor="priority" className="form-label">
                 Priority
               </label>
               <select
-                className="form-select w-75"
-                name="priority"
                 id="priority"
+                name="priority"
+                className="form-select w-100"
                 value={formik.values.priority}
                 onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
               >
                 <option value="">-- Select --</option>
                 <option value="Low">Low</option>
@@ -108,43 +112,28 @@ export default function AddTask({ CloseAddTask }) {
                 <option value="High">High</option>
               </select>
             </div>
-
-            <div className="col mb-3">
-              <label className="form-label" htmlFor="time">
-                Time
-              </label>
-              <input
-                className="form-control w-75"
-                name="time"
-                id="time"
-                value={formik.values.time}
-                type="time"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-            </div>
           </div>
 
           <div className="mb-3">
-            <label className="form-label" htmlFor="taskdescription">
+            <label htmlFor="description" className="form-label">
               Task Description
             </label>
             <textarea
+              id="description"
+              name="description"
+              rows={3}
               className="form-control"
-              name="taskdescription"
-              id="taskdescription"
-              value={formik.values.taskdescription}
-              placeholder="Task Description"
+              placeholder="Enter description"
+              value={formik.values.description}
               onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
             />
           </div>
 
-          <div className="text-center">
+          <div className="text-center mt-4">
             {loading ? (
               <Loader />
             ) : (
-              <button type="submit" className="btn btn-primary w-50">
+              <button type="submit" className="btn btn-primary px-4">
                 Add Task
               </button>
             )}

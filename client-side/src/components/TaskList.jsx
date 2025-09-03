@@ -1,63 +1,55 @@
-import { useState, useEffect } from "react";
-import { OverlayTrigger, Tooltip, Button } from "react-bootstrap";
-import Task from "./ShowTask";
-import { handlegetList } from "../services/AppService";
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import Loader from "./Loader";
+import Task from "./ShowTask";
+import { fetchTasks } from "../utils/taskSlice";
+
 function TaskList() {
-  const { Show, card, enableTask } = Task();
-  const [selectedtask, setselectedtask] = useState({
-    taskid: 1,
-    taskname: "Homework",
-    priority: "High",
-    Date: "22/12/2025",
-    description: "science homework",
-    Status: "PENDING",
-  });
-  const showItem = (task) => {
-    setselectedtask(task);
-    Show();
+  const dispatch = useDispatch();
+  const { items, loading, error } = useSelector((state) => state.tasks);
+  const [selectedtask, setSelectedtask] = useState({});
+  const [enabletask, setEnableTask] = useState(false);
+  const Show = (task) => {
+    setSelectedtask(task);
+    setEnableTask(true);
   };
-  const List = () => {
-    const [data, setData] = useState([]);
-    const [loading, setloading] = useState(false);
-    useEffect(() => {
-      setloading(true);
-      handlegetList()
-        .then((response) => {
-          setData(response.data);
-          setloading(false);
-        })
-        .catch((error) => {
-          console.log(error);
-          setloading(false);
-        });
-    }, []);
+  const onClose = () => {
+    setEnableTask(false);
+  };
+  useEffect(() => {
+    dispatch(fetchTasks());
+  }, [dispatch]);
 
-    const priorityStyle = (priority) => ({
-      backgroundColor:
-        priority === "High" ? "red" : priority === "Low" ? "yellow" : "orange",
-    });
+  const priorityStyle = (priority) => ({
+    backgroundColor:
+      priority === "High" ? "red" : priority === "Low" ? "yellow" : "orange",
+  });
 
-    return (
-      <>
-        <div className="container text-center mt-2">
-          <h1 className="text-primary">Tasks</h1>
-        </div>
-        <hr />
+  return (
+    <>
+      {enabletask && <Task task={selectedtask} onClose={onClose} />}
+      <div className="container text-center mt-2">
+        <h1 className="text-primary">Tasks</h1>
+      </div>
+      <hr />
+      <div className="overflow-y-scroll" style={{ height: "80vh" }}>
         {loading ? (
           <Loader />
-        ) : data && data.length > 0 ? (
-          data.map((task) => (
+        ) : items && items.length > 0 ? (
+          items.map((task) => (
             <div
-              key={task.taskid}
-              onClick={() => showItem(task)}
-              className="card border-0 rounded-3 mt-4 shadow-sm hover-shadow"
+              key={task._id}
+              className="card border-0 rounded-3 mt-4 shadow-lg hover-shadow"
               style={{ minHeight: "200px" }}
+              onClick={() => {
+                Show(task);
+              }}
             >
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div>
-                    {task.Status === "COMPLETED" && (
+                    {task.status === "COMPLETED" && (
                       <i className="bi bi-check-circle-fill text-success fs-4"></i>
                     )}
                   </div>
@@ -78,7 +70,7 @@ function TaskList() {
                 </div>
 
                 <h5 className="mt-3 fw-bold fst-monospace text-dark">
-                  {task.taskname}
+                  {task.name}
                 </h5>
 
                 <p className="text-secondary small mb-3">
@@ -89,10 +81,10 @@ function TaskList() {
 
                 <div className="d-flex justify-content-between text-muted small">
                   <span>
-                    <strong>Completion:</strong> {task.Date}
+                    <strong>Deadline:</strong> {task.deadline}
                   </span>
                   <span>
-                    <strong>Status:</strong> {task.Status}
+                    <strong>Status:</strong> {task.status}
                   </span>
                 </div>
               </div>
@@ -101,10 +93,9 @@ function TaskList() {
         ) : (
           <div className="text-center text-muted mt-4">No Data Found.</div>
         )}
-      </>
-    );
-  };
-
-  return { card, selectedtask, List, enableTask };
+      </div>
+    </>
+  );
 }
+
 export default TaskList;
